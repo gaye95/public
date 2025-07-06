@@ -1,0 +1,11 @@
+{
+  "name": "paytech",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "serve public -l 3000", 
+    "build": "echo 'Aucune compilation nécessaire' && exit 0"
+  },
+  "dependencies": {
+    "serve": "^14.2.0"  
+  }
+}

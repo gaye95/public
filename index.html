@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Josephine Business Boutique</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+      }
+
+      nav {
+        background-color: #222;
+        color: #fff;
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        flex-wrap: wrap;
+      }
+
+      nav h1 {
+        font-size: 1.5rem;
+      }
+
+      #cart-container {
+        position: relative;
+        cursor: pointer;
+        margin-top: 0.5rem;
+      }
+
+      #cart-icon {
+        font-size: 1.8rem;
+        color: #fff;
+        position: relative;
+      }
+
+      #cart-count {
+        position: absolute;
+        top: -8px;
+        right: -12px;
+        background: red;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 50%;
+        display: none;
+        user-select: none;
+      }
+
+      .cart-dropdown {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 2.8rem;
+        background: #fff;
+        color: #333;
+        width: 320px;
+        max-height: 400px;
+        overflow-y: auto;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        border-radius: 6px;
+        padding: 1rem;
+        z-index: 1000;
+      }
+
+      .cart-dropdown h2 {
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+      }
+
+      .cart-items {
+        list-style: none;
+        padding-left: 0;
+        max-height: 250px;
+        overflow-y: auto;
+        margin-bottom: 1rem;
+      }
+
+      .cart-items li {
+        margin-bottom: 0.5rem;
+      }
+
+      .cart-total {
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+      }
+
+      .pay-button {
+        width: 100%;
+        padding: 0.7rem 1.5rem;
+        background-color: #4caf50;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+
+      .pay-button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      .products {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        padding: 2rem;
+      }
+
+      .product {
+        background: #fff;
+        padding: 1rem;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      .product img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+      }
+
+      .product-name {
+        font-weight: bold;
+        margin: 0.5rem 0;
+      }
+
+      .product-price {
+        color: #388e3c;
+        margin-bottom: 0.5rem;
+      }
+
+      .add-to-cart {
+        background-color: #ff9800;
+        color: #fff;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+      }
+
+      .modal {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        max-width: 400px;
+        width: 90%;
+      }
+
+      .modal-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .modal .confirm {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .modal .cancel {
+        background-color: #ccc;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .message.success {
+        color: green;
+        margin-top: 1rem;
+      }
+
+      .message.error {
+        color: red;
+        margin-top: 1rem;
+      }
+
+      @media (max-width: 600px) {
+        nav {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .cart-dropdown {
+          width: 90vw !important;
+          left: 5vw !important;
+          right: auto !important;
+        }
+
+        .modal {
+          width: 90vw;
+          padding: 1.5rem;
+        }
+
+        .modal-buttons {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .modal-buttons button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <h1>Josephine Business Boutique</h1>
+      <div id="cart-container" title="Voir le panier">
+        <span id="cart-icon"> 🛒 <span id="cart-count">0</span> </span>
+        <div class="cart-dropdown" id="cart-dropdown">
+          <h2>Panier</h2>
+          <ul class="cart-items" id="cart-items"></ul>
+          <div class="cart-total" id="cart-total">Total: 0 FCFA</div>
+          <button class="pay-button" id="pay-button" disabled>Payer</button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="products" id="products"></div>
+
+    <div class="modal-overlay" id="modal-overlay">
+      <div class="modal">
+        <h3>Confirmer le paiement</h3>
+        <p>Voulez-vous payer <span id="modal-total"></span> ?</p>
+        <div class="modal-buttons">
+          <button class="cancel" id="modal-cancel">Annuler</button>
+          <button class="confirm" id="modal-confirm">Payer</button>
+        </div>
+        <div class="message" id="modal-message"></div>
+      </div>
+    </div>
+
+    <script>
+      const shoeImages = [
+        "https://www.africabaie.com/wp-content/uploads/2023/07/1688962730931-247x296.jpg",
+        "https://senachat.com/public/uploads/all/CvxLywHxepKCLsNYR3VSOctKTd8UhneM4LtbnocE.jpg",
+        "https://images.coinafrique.com/785409_uploaded_image1_1564168540.21.png",
+        "https://diaytar.com/wp-content/uploads/sn221/chaussure-orthop-dique-sandale-orthop-dique-thiarakh_397_dakar_senegal.png",
+        "https://senachat.com/public/uploads/all/CvxLywHxepKCLsNYR3VSOctKTd8UhneM4LtbnocE.jpg",
+      ];
+
+      const products = [];
+      for (let i = 1; i <= 100; i++) {
+        const price = Math.floor(Math.random() * 81) + 120;
+        products.push({
+          id: i,
+          name: `Chaussure Africaine ${i}`,
+          price,
+          img: shoeImages[(i - 1) % shoeImages.length],
+        });
+      }
+
+      const productsContainer = document.getElementById("products");
+      const cartItemsContainer = document.getElementById("cart-items");
+      const cartTotalContainer = document.getElementById("cart-total");
+      const payButton = document.getElementById("pay-button");
+      const modalOverlay = document.getElementById("modal-overlay");
+      const modalTotal = document.getElementById("modal-total");
+      const modalCancel = document.getElementById("modal-cancel");
+      const modalConfirm = document.getElementById("modal-confirm");
+      const modalMessage = document.getElementById("modal-message");
+
+      const cartContainer = document.getElementById("cart-container");
+      const cartDropdown = document.getElementById("cart-dropdown");
+      const cartCount = document.getElementById("cart-count");
+
+      let cart = [];
+
+      function updateCartCount() {
+        const totalCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+        if (totalCount > 0) {
+          cartCount.style.display = "inline-block";
+          cartCount.textContent = totalCount;
+        } else {
+          cartCount.style.display = "none";
+        }
+      }
+
+      function renderProducts() {
+        productsContainer.innerHTML = "";
+        products.forEach((product) => {
+          const div = document.createElement("div");
+          div.className = "product";
+          div.innerHTML = `
+            <img src="${product.img}" alt="${product.name}">
+            <div class="product-name">${product.name}</div>
+            <div class="product-price">${product.price} FCFA</div>
+            <button class="add-to-cart" data-id="${product.id}">Ajouter au panier</button>
+          `;
+          productsContainer.appendChild(div);
+        });
+      }
+
+      function renderCart() {
+        cartItemsContainer.innerHTML = "";
+        if (cart.length === 0) {
+          cartItemsContainer.innerHTML = "<li>Votre panier est vide</li>";
+          cartTotalContainer.textContent = "Total: 0 FCFA";
+          payButton.disabled = true;
+          updateCartCount();
+          return;
+        }
+
+        let total = 0;
+        cart.forEach((item) => {
+          total += item.price * item.quantity;
+          const li = document.createElement("li");
+          li.textContent = `${item.name} x${item.quantity} - ${
+            item.price * item.quantity
+          } FCFA`;
+          cartItemsContainer.appendChild(li);
+        });
+        cartTotalContainer.textContent = `Total: ${total} FCFA`;
+        payButton.disabled = false;
+        updateCartCount();
+      }
+
+      productsContainer.addEventListener("click", (e) => {
+        if (e.target.classList.contains("add-to-cart")) {
+          const id = Number(e.target.getAttribute("data-id"));
+          const product = products.find((p) => p.id === id);
+          if (!product) return;
+
+          const cartItem = cart.find((item) => item.id === id);
+          if (cartItem) {
+            cartItem.quantity++;
+          } else {
+            cart.push({ ...product, quantity: 1 });
+          }
+          renderCart();
+        }
+      });
+
+      document.getElementById("cart-icon").addEventListener("click", (e) => {
+        e.stopPropagation();
+        cartDropdown.style.display =
+          cartDropdown.style.display === "block" ? "none" : "block";
+      });
+
+      document.addEventListener("click", () => {
+        cartDropdown.style.display = "none";
+      });
+
+      cartDropdown.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+
+      payButton.addEventListener("click", () => {
+        const total = cart.reduce(
+          (acc, item) => acc + item.price * item.quantity,
+          0
+        );
+        modalTotal.textContent = `${total} FCFA`;
+        modalMessage.textContent = "";
+        modalOverlay.style.display = "flex";
+      });
+
+      modalCancel.addEventListener("click", () => {
+        modalOverlay.style.display = "none";
+      });
+
+      modalConfirm.addEventListener("click", async () => {
+        modalMessage.textContent = "Traitement du paiement...";
+        modalConfirm.disabled = true;
+        modalCancel.disabled = true;
+
+        const total = cart.reduce(
+          (acc, item) => acc + item.price * item.quantity,
+          0
+        );
+
+        const paymentData = {
+          amount: total,
+          clientName: "Client Test",
+          clientPhone: "781646424",
+        };
+
+        try {
+          const response = await fetch("http://localhost:3001/api/pay", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(paymentData),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            modalMessage.textContent = "Paiement réussi ! Redirection...";
+            modalMessage.className = "message success";
+            setTimeout(() => {
+              window.location.href = data.redirect_url || "/";
+            }, 1500);
+          } else {
+            throw new Error(data.message || "Erreur lors du paiement");
+          }
+        } catch (err) {
+          modalMessage.textContent = "Erreur: " + err.message;
+          modalMessage.className = "message error";
+          modalConfirm.disabled = false;
+          modalCancel.disabled = false;
+        }
+      });
+
+      renderProducts();
+      renderCart();
+    </script>
+  </body>
+</html>
